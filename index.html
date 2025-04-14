@@ -126,7 +126,8 @@
             display: flex;
             gap: 10px;
         }
-      button {
+
+        button {
             padding: 12px 20px;
             font-size: 16px;
             border: none;
@@ -134,6 +135,13 @@
             background-color: #2AABEE;
             color: white;
             cursor: pointer;
+        }
+
+        #debug {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
         }
     </style>
 </head>
@@ -164,8 +172,20 @@
         <button id="random-btn">Generate Random Score</button>
         <button id="close-btn">Close</button>
     </div>
+    
+    <div id="debug"></div>
 
     <script>
+        // Debug element
+        const debugEl = document.getElementById('debug');
+        
+        function log(message) {
+            console.log(message);
+            debugEl.innerHTML += message + '<br>';
+        }
+        
+        log('Page loaded');
+        
         // Initialize Telegram WebApp with fallback for testing outside Telegram
         let tgApp;
         try {
@@ -173,25 +193,25 @@
                 tgApp = window.Telegram.WebApp;
                 tgApp.expand(); // Expand to full screen
                 tgApp.ready(); // Tell Telegram WebApp is ready
-                console.log("Telegram WebApp initialized successfully");
+                log('Telegram WebApp initialized successfully');
             } else {
-                console.log("Telegram WebApp not available - running in standalone mode");
+                log('Telegram WebApp not available - running in standalone mode');
                 // Create a mock tgApp for testing outside of Telegram
                 tgApp = {
-                    expand: () => console.log("Mock: expand called"),
-                    ready: () => console.log("Mock: ready called"),
-                    close: () => console.log("Mock: close called"),
-                    sendData: (data) => console.log("Mock: sendData called with", data)
+                    expand: () => log('Mock: expand called'),
+                    ready: () => log('Mock: ready called'),
+                    close: () => log('Mock: close called'),
+                    sendData: (data) => log('Mock: sendData called with ' + data)
                 };
             }
         } catch (e) {
-            console.error("Error initializing Telegram WebApp:", e);
+            log('Error initializing Telegram WebApp: ' + e.message);
             // Create a mock tgApp for error recovery
             tgApp = {
                 expand: () => {},
                 ready: () => {},
-                close: () => alert("App would close here"),
-                sendData: (data) => console.log("Data that would be sent:", data)
+                close: () => alert('App would close here'),
+                sendData: (data) => log('Data that would be sent: ' + data)
             };
         }
 
@@ -202,6 +222,8 @@
         const randomBtn = document.getElementById('random-btn');
         const closeBtn = document.getElementById('close-btn');
 
+        log('Elements loaded');
+
         // Truthfulness levels
         const levels = [
             { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
@@ -211,19 +233,24 @@
             { min: 80, max: 100, text: "FACTUAL", color: "#90EE90" },
             { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
         ];
-// Function to set gauge value
+
+        // Function to set gauge value
         function setGaugeValue(value) {
+            log('Setting gauge value: ' + value);
+            
             // Ensure value is between 0 and 100
             const percentage = Math.max(0, Math.min(100, value));
+            log('Normalized percentage: ' + percentage);
             
             // Calculate rotation based on percentage (0% = -90deg, 100% = 90deg)
             const rotation = -90 + (percentage * 180 / 100);
+            log('Needle rotation: ' + rotation + 'deg');
             
             // Animate needle
-            gaugeNeedle.style.transform = rotate(${rotation}deg);
+            gaugeNeedle.style.transform = `rotate(${rotation}deg)`;
             
             // Update percentage text
-            gaugePercentage.textContent = ${Math.round(percentage)}%;
+            gaugePercentage.textContent = `${Math.round(percentage)}%`;
             
             // Determine and set text based on percentage
             for (const level of levels) {
@@ -231,6 +258,7 @@
                     gaugeText.textContent = level.text;
                     gaugeText.style.color = level.color;
                     gaugePercentage.style.color = level.color;
+                    log('Set level: ' + level.text);
                     break;
                 }
             }
@@ -238,48 +266,104 @@
             // Send data back to Telegram bot if score was generated
             try {
                 if (tgApp && typeof tgApp.sendData === 'function') {
-                    tgApp.sendData(JSON.stringify({
+                    const dataToSend = JSON.stringify({
                         score: percentage,
                         text: gaugeText.textContent
-                    }));
+                    });
+                    tgApp.sendData(dataToSend);
+                    log('Sent data to Telegram: ' + dataToSend);
                 }
             } catch (e) {
-                console.error("Error sending data to Telegram:", e);
+                log('Error sending data to Telegram: ' + e.message);
             }
         }
 
         // Generate a random score
         function generateRandomScore() {
+            log('Generating random score');
             const randomScore = Math.floor(Math.random() * 101);
+            log('Random score generated: ' + randomScore);
             setGaugeValue(randomScore);
         }
 
         // Event listeners
-        randomBtn.addEventListener('click', generateRandomScore);
-        closeBtn.addEventListener('click', () => {
+        randomBtn.addEventListener('click', function() {
+            log('Random button clicked');
+            generateRandomScore();
+        });
+        
+        closeBtn.addEventListener('click', function() {
+            log('Close button clicked');
             try {
                 if (tgApp && typeof tgApp.close === 'function') {
                     tgApp.close();
+                    log('Telegram WebApp closed');
                 } else {
+                    log('Telegram WebApp not available, would close now');
                     alert("This would close the Telegram WebApp");
                 }
             } catch (e) {
-                console.error("Error closing WebApp:", e);
+                log('Error closing WebApp: ' + e.message);
                 alert("Unable to close the WebApp properly");
             }
         });
 
+        log('Event listeners added');
+
         // Check if a score was passed from the bot
-        const urlParams = new URLSearchParams(window.location.search);
-        const score = urlParams.get('score');
+        function getScoreFromURL() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const scoreParam = urlParams.get('score');
+                log('URL param "score": ' + scoreParam);
+                
+                if (scoreParam !== null) {
+                    const scoreValue = parseFloat(scoreParam);
+                    
+                    if (!isNaN(scoreValue)) {
+                        log('Valid score found in URL: ' + scoreValue);
+                        return scoreValue;
+                    } else {
+                        log('Score parameter is not a valid number');
+                    }
+                } else {
+                    log('No score parameter found in URL');
+                }
+            } catch (e) {
+                log('Error parsing URL parameters: ' + e.message);
+            }
+            
+            return null;
+        }
+
+        // Initialize the gauge
+        function initGauge() {
+            log('Initializing gauge');
+            const scoreFromURL = getScoreFromURL();
+            
+            if (scoreFromURL !== null) {
+                // If score is provided, use it
+                log('Using score from URL: ' + scoreFromURL);
+                setGaugeValue(scoreFromURL);
+            } else {
+                // Otherwise generate a random one
+                log('No valid score in URL, generating random score');
+                generateRandomScore();
+            }
+        }
+
+        // Run initialization
+        window.onload = function() {
+            log('Window loaded');
+            initGauge();
+        };
         
-        if (score !== null && !isNaN(parseFloat(score))) {
-            // If score is provided, use it
-            setGaugeValue(parseFloat(score));
-        } else {
-            // Otherwise generate a random one
-            generateRandomScore();
+        // If window is already loaded, run init now
+        if (document.readyState === 'complete') {
+            log('Document already complete, running init now');
+            initGauge();
         }
     </script>
 </body>
 </html>
+
