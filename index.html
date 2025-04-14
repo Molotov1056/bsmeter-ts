@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truthfulness Gauge</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1E1E1E;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #gauge-container {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            margin-top: 50px;
+        }
+
+        #gauge-bg {
+            position: absolute;
+            width: 300px;
+            height: 150px;
+            border-top-left-radius: 150px;
+            border-top-right-radius: 150px;
+            background: linear-gradient(90deg, 
+                rgba(0, 128, 0, 0.2) 0%, 
+                rgba(144, 238, 144, 0.2) 20%, 
+                rgba(255, 255, 0, 0.2) 40%, 
+                rgba(255, 165, 0, 0.2) 60%, 
+                rgba(255, 69, 0, 0.2) 80%, 
+                rgba(255, 0, 0, 0.2) 100%);
+            overflow: hidden;
+        }
+
+        #gauge-needle {
+            position: absolute;
+            bottom: 0;
+            left: 150px;
+            width: 4px;
+            height: 140px;
+            background-color: #ffffff;
+            transform-origin: bottom center;
+            transform: rotate(0deg);
+            transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            z-index: 2;
+        }
+
+        #gauge-needle:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: -8px;
+            width: 20px;
+            height: 20px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        #gauge-text {
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #gauge-percentage {
+            position: absolute;
+            bottom: -80px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .gauge-labels {
+            position: absolute;
+            width: 300px;
+            height: 20px;
+            bottom: -20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .gauge-label {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .left {
+            color: #00FF00;
+        }
+
+        .right {
+            color: #FF0000;
+        }
+
+        .levels {
+            position: absolute;
+            width: 280px;
+            height: 10px;
+            bottom: -15px;
+            left: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .level-marker {
+            width: 2px;
+            height: 10px;
+            background-color: #ffffff;
+        }
+
+        #button-container {
+            margin-top: 120px;
+            display: flex;
+            gap: 10px;
+        }
+      button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: #2AABEE;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Truthfulness Gauge</h1>
+    
+    <div id="gauge-container">
+        <div id="gauge-bg"></div>
+        <div id="gauge-needle"></div>
+        <div class="gauge-labels">
+            <div class="gauge-label left">TRUE</div>
+            <div class="gauge-label right">BULLSHIT</div>
+        </div>
+        <div class="levels">
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+            <div class="level-marker"></div>
+        </div>
+        <div id="gauge-text">CHECKING...</div>
+        <div id="gauge-percentage">0%</div>
+    </div>
+    
+    <div id="button-container">
+        <button id="random-btn">Generate Random Score</button>
+        <button id="close-btn">Close</button>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp with fallback for testing outside Telegram
+        let tgApp;
+        try {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tgApp = window.Telegram.WebApp;
+                tgApp.expand(); // Expand to full screen
+                tgApp.ready(); // Tell Telegram WebApp is ready
+                console.log("Telegram WebApp initialized successfully");
+            } else {
+                console.log("Telegram WebApp not available - running in standalone mode");
+                // Create a mock tgApp for testing outside of Telegram
+                tgApp = {
+                    expand: () => console.log("Mock: expand called"),
+                    ready: () => console.log("Mock: ready called"),
+                    close: () => console.log("Mock: close called"),
+                    sendData: (data) => console.log("Mock: sendData called with", data)
+                };
+            }
+        } catch (e) {
+            console.error("Error initializing Telegram WebApp:", e);
+            // Create a mock tgApp for error recovery
+            tgApp = {
+                expand: () => {},
+                ready: () => {},
+                close: () => alert("App would close here"),
+                sendData: (data) => console.log("Data that would be sent:", data)
+            };
+        }
+
+        // Elements
+        const gaugeNeedle = document.getElementById('gauge-needle');
+        const gaugeText = document.getElementById('gauge-text');
+        const gaugePercentage = document.getElementById('gauge-percentage');
+        const randomBtn = document.getElementById('random-btn');
+        const closeBtn = document.getElementById('close-btn');
+
+        // Truthfulness levels
+        const levels = [
+            { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
+            { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF4500" },
+            { min: 40, max: 60, text: "QUESTIONABLE", color: "#FFA500" },
+            { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFFF00" },
+            { min: 80, max: 100, text: "FACTUAL", color: "#90EE90" },
+            { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
+        ];
+// Function to set gauge value
+        function setGaugeValue(value) {
+            // Ensure value is between 0 and 100
+            const percentage = Math.max(0, Math.min(100, value));
+            
+            // Calculate rotation based on percentage (0% = -90deg, 100% = 90deg)
+            const rotation = -90 + (percentage * 180 / 100);
+            
+            // Animate needle
+            gaugeNeedle.style.transform = rotate(${rotation}deg);
+            
+            // Update percentage text
+            gaugePercentage.textContent = ${Math.round(percentage)}%;
+            
+            // Determine and set text based on percentage
+            for (const level of levels) {
+                if (percentage >= level.min && percentage < level.max) {
+                    gaugeText.textContent = level.text;
+                    gaugeText.style.color = level.color;
+                    gaugePercentage.style.color = level.color;
+                    break;
+                }
+            }
+            
+            // Send data back to Telegram bot if score was generated
+            try {
+                if (tgApp && typeof tgApp.sendData === 'function') {
+                    tgApp.sendData(JSON.stringify({
+                        score: percentage,
+                        text: gaugeText.textContent
+                    }));
+                }
+            } catch (e) {
+                console.error("Error sending data to Telegram:", e);
+            }
+        }
+
+        // Generate a random score
+        function generateRandomScore() {
+            const randomScore = Math.floor(Math.random() * 101);
+            setGaugeValue(randomScore);
+        }
+
+        // Event listeners
+        randomBtn.addEventListener('click', generateRandomScore);
+        closeBtn.addEventListener('click', () => {
+            try {
+                if (tgApp && typeof tgApp.close === 'function') {
+                    tgApp.close();
+                } else {
+                    alert("This would close the Telegram WebApp");
+                }
+            } catch (e) {
+                console.error("Error closing WebApp:", e);
+                alert("Unable to close the WebApp properly");
+            }
+        });
+
+        // Check if a score was passed from the bot
+        const urlParams = new URLSearchParams(window.location.search);
+        const score = urlParams.get('score');
+        
+        if (score !== null && !isNaN(parseFloat(score))) {
+            // If score is provided, use it
+            setGaugeValue(parseFloat(score));
+        } else {
+            // Otherwise generate a random one
+            generateRandomScore();
+        }
+    </script>
+</body>
+</html>
