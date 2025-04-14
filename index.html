@@ -321,8 +321,10 @@
                     const scoreValue = parseFloat(scoreParam);
                     
                     if (!isNaN(scoreValue)) {
-                        log('Valid score found in URL: ' + scoreValue);
-                        return scoreValue;
+                        // Convert the decimal format (0-1) to percentage (0-100)
+                        const percentageScore = (scoreValue <= 1) ? scoreValue * 100 : scoreValue;
+                        log('Valid score found in URL: ' + scoreValue + ' converted to: ' + percentageScore + '%');
+                        return percentageScore;
                     } else {
                         log('Score parameter is not a valid number');
                     }
@@ -366,4 +368,6 @@
     </script>
 </body>
 </html>
+
+
 
