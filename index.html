@@ -1,162 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Truthfulness Gauge</title>
   <style>
-    /* Reset & layout */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
+      margin: 0;
+      font-family: sans-serif;
+      background: white;
+      color: #222;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      padding: 20px;
       height: 100vh;
-      background: #fff;
-      font-family: Arial, sans-serif;
-      color: #333;
     }
-    #app { text-align: center; padding: 16px; }
-
-    /* Gauge */
-    .gauge {
+    .gauge-container {
       position: relative;
       width: 100%;
-      max-width: 300px;
-      aspect-ratio: 2/1;
+      max-width: 320px;
+      aspect-ratio: 2 / 1;
       overflow: hidden;
-      margin: auto;
     }
     .gauge-arc {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 200%;
-      border-radius: 50%;
+      width: 100%;
+      height: 200%;
       background: conic-gradient(
-        from 180deg at 50% 50%,
-        #e74c3c 0% 20%,
-        #e67e22 20% 40%,
+        #27ae60 0% 20%,
+        #2ecc71 20% 40%,
         #f1c40f 40% 60%,
-        #2ecc71 60% 80%,
-        #27ae60 80% 100%
+        #e67e22 60% 80%,
+        #e74c3c 80% 100%
       );
-    }
-    .gauge-center {
-      position: absolute;
-      top: 25%; left: 25%;
-      width: 50%; height: 50%;
-      background: #fff;
       border-radius: 50%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .gauge-cover {
+      width: 60%;
+      height: 60%;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
     }
     .needle {
+      width: 4px;
+      height: 50%;
+      background: black;
       position: absolute;
-      bottom: 0; left: 50%;
-      width: 2%; height: 80%;
-      background: #000;
+      bottom: 0;
+      left: 50%;
       transform-origin: bottom center;
       transform: rotate(-90deg);
       transition: transform 1s ease-out;
+      z-index: 3;
     }
-
-    /* Labels & buttons */
-    #labels {
+    .labels {
+      width: 100%;
+      max-width: 320px;
       display: flex;
       justify-content: space-between;
       margin-top: 8px;
       font-weight: bold;
     }
-    #score { font-size: 2em; margin: 8px 0; }
-    #description { font-size: 1.2em; margin-bottom: 16px; }
+    .score {
+      font-size: 2em;
+      margin-top: 16px;
+    }
+    .description {
+      font-size: 1.2em;
+      margin-bottom: 16px;
+    }
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
     button {
-      margin: 4px;
-      padding: 8px 16px;
+      padding: 10px 16px;
       font-size: 1em;
-      border: none;
-      border-radius: 4px;
       background: #007bff;
-      color: #fff;
+      color: white;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
-    button:active { opacity: 0.8; }
+    button:active {
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Gauge SVG substitute -->
-    <div class="gauge">
-      <div class="gauge-arc"></div>
-      <div class="gauge-center"></div>
-      <div class="needle" id="needle"></div>
-    </div>
+  <div class="gauge-container">
+    <div class="gauge-arc"></div>
+    <div class="needle" id="needle"></div>
+    <div class="gauge-cover"></div>
+  </div>
 
-    <!-- Static end‑labels -->
-    <div id="labels">
-      <span>BULLSHIT</span>
-      <span>TRUE</span>
-    </div>
+  <div class="labels">
+    <span>BULLSHIT</span>
+    <span>TRUE</span>
+  </div>
 
-    <!-- Dynamic score & description -->
-    <div id="score">0%</div>
-    <div id="description">COMPLETE BULLSHIT</div>
+  <div class="score" id="score">--%</div>
+  <div class="description" id="description">Loading...</div>
 
-    <!-- Controls -->
+  <div class="buttons">
     <button id="randomBtn">Generate Random Score</button>
     <button id="closeBtn">Close</button>
   </div>
 
   <script>
     (()=>{
-      // 1) Read & validate URL “score” param
-      const p = new URLSearchParams(window.location.search);
-      let score = parseInt(p.get('score'),10);
-      if (isNaN(score)||score<0||score>100) {
-        score = Math.floor(Math.random()*101);
-        console.log('Invalid/missing score → random:',score);
-      } else {
-        console.log('Loaded score from URL:',score);
-      }
+      const needle = document.getElementById('needle');
+      const scoreText = document.getElementById('score');
+      const description = document.getElementById('description');
 
-      // 2) Element refs
-      const needle      = document.getElementById('needle');
-      const scoreLabel  = document.getElementById('score');
-      const descLabel   = document.getElementById('description');
-      const randomBtn   = document.getElementById('randomBtn');
-      const closeBtn    = document.getElementById('closeBtn');
+      const getDescription = (val) => {
+        if (val < 20) return "COMPLETE BULLSHIT";
+        if (val < 40) return "QUESTIONABLE";
+        if (val < 60) return "MIXED";
+        if (val < 80) return "FACTUAL";
+        return "ABSOLUTE TRUTH";
+      };
 
-      // 3) Text for each 20% bucket
-      const states = [
-        { threshold: 20, text:'COMPLETE BULLSHIT' },
-        { threshold: 40, text:'QUESTIONABLE'       },
-        { threshold: 60, text:'SOMEWHAT TRUE'      },
-        { threshold: 80, text:'FACTUAL'            },
-        { threshold:100, text:'ABSOLUTE TRUTH'     },
-      ];
-      const getDesc = v => states.find(s=>v<=s.threshold).text;
-
-      // 4) Set & animate gauge + sendData()
-      function setScore(v,anim=true){
-        const angle = v*1.8 - 90; // map [0–100] → [–90°–+90°]
-        needle.style.transition = anim ? 'transform 1s ease-out' : 'none';
-        needle.style.transform  = `rotate(${angle}deg)`;
-        scoreLabel .textContent = `${v}%`;
-        descLabel  .textContent = getDesc(v);
-        console.log('Set score:',v);
+      const setGauge = (val, animate = true) => {
+        const angle = (val * 1.8) - 90; // maps 0–100 → -90 to +90
+        needle.style.transition = animate ? 'transform 1s ease-out' : 'none';
+        needle.style.transform = `rotate(${angle}deg)`;
+        scoreText.textContent = `${val}%`;
+        description.textContent = getDescription(val);
+        console.log("Set score:", val);
         if (window.Telegram?.WebApp?.sendData) {
-          Telegram.WebApp.sendData(JSON.stringify({score:v}));
-          console.log('Sent to bot:',v);
-        } else console.warn('No Telegram.WebApp API');
-      }
+          Telegram.WebApp.sendData(JSON.stringify({ score: val }));
+          console.log("Sent to bot:", val);
+        } else {
+          console.warn("Telegram WebApp API not available");
+        }
+      };
 
-      // 5) Button handlers
-      randomBtn.addEventListener('click',()=>setScore(Math.floor(Math.random()*101)));
-      closeBtn .addEventListener('click',()=>{
-        if(window.Telegram?.WebApp?.close) Telegram.WebApp.close();
-        else console.warn('No Telegram.WebApp.close');
+      const getInitialScore = () => {
+        const params = new URLSearchParams(location.search);
+        const raw = params.get("score");
+        const val = parseInt(raw, 10);
+        if (!isNaN(val) && val >= 0 && val <= 100) {
+          return val;
+        }
+        const rand = Math.floor(Math.random() * 101);
+        console.log("Invalid or missing score, using random:", rand);
+        return rand;
+      };
+
+      document.getElementById('randomBtn').addEventListener('click', () => {
+        const val = Math.floor(Math.random() * 101);
+        setGauge(val);
       });
 
-      // 6) Init Telegram WebApp & initial render
-      if(window.Telegram?.WebApp?.ready) Telegram.WebApp.ready();
-      setScore(score,false);
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        if (window.Telegram?.WebApp?.close) {
+          Telegram.WebApp.close();
+        } else {
+          console.warn("Telegram WebApp API not available for close");
+        }
+      });
+
+      // Init
+      if (window.Telegram?.WebApp?.ready) {
+        Telegram.WebApp.ready();
+      }
+      setGauge(getInitialScore(), false);
     })();
   </script>
 </body>
