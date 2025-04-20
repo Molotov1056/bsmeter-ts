@@ -25,43 +25,69 @@
             margin-top: 50px;
         }
 
-        #gauge-bg {
+        /* Create a gauge with clean color sections */
+        #gauge-background {
             position: absolute;
             width: 300px;
             height: 150px;
-            border-top-left-radius: 150px;
+            background: transparent;
+            border-top-left-radius: 150px; 
             border-top-right-radius: 150px;
-            background: linear-gradient(90deg, 
-                rgba(0, 128, 0, 0.2) 0%, 
-                rgba(144, 238, 144, 0.2) 20%, 
-                rgba(255, 255, 0, 0.2) 40%, 
-                rgba(255, 165, 0, 0.2) 60%, 
-                rgba(255, 69, 0, 0.2) 80%, 
-                rgba(255, 0, 0, 0.2) 100%);
             overflow: hidden;
+        }
+
+        #gauge-segments {
+            position: absolute;
+            width: 300px;
+            height: 150px;
+            /* Reversed gradient so higher scores (right) point to "TRUE" */
+            background: conic-gradient(
+                from -90deg,
+                #FF0000 0%, 
+                #FF0000 25%, 
+                #FFA500 25%, 
+                #FFA500 50%, 
+                #FFD700 50%, 
+                #FFD700 75%, 
+                #32CD32 75%, 
+                #32CD32 100%
+            );
+            border-radius: 150px 150px 0 0;
+            clip-path: polygon(0 50%, 100% 50%, 100% 0, 0 0);
+        }
+
+        #gauge-center {
+            position: absolute;
+            bottom: 0;
+            left: 125px;
+            width: 50px;
+            height: 25px;
+            background-color: #1E1E1E;
+            border-radius: 25px 25px 0 0;
         }
 
         #gauge-needle {
             position: absolute;
             bottom: 0;
             left: 150px;
-            width: 4px;
-            height: 140px;
-            background-color: #ffffff;
+            width: 3px;
+            height: 120px;
+            background-color: #000000;
             transform-origin: bottom center;
             transform: rotate(0deg);
             transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-            z-index: 2;
+            z-index: 3;
         }
 
         #gauge-needle:after {
             content: '';
             position: absolute;
-            bottom: -8px;
-            left: -8px;
-            width: 20px;
-            height: 20px;
-            background-color: #ffffff;
+            bottom: -5px;
+            left: -7px;
+            width: 17px;
+            height: 17px;
+            background-color: #000000;
+            border: 2px solid #ffffff;
             border-radius: 50%;
         }
 
@@ -97,28 +123,13 @@
             font-weight: bold;
         }
 
+        /* Swapped left/right colors to match the new gradient direction */
         .left {
-            color: #00FF00;
-        }
-
-        .right {
             color: #FF0000;
         }
 
-        .levels {
-            position: absolute;
-            width: 280px;
-            height: 10px;
-            bottom: -15px;
-            left: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .level-marker {
-            width: 2px;
-            height: 10px;
-            background-color: #ffffff;
+        .right {
+            color: #32CD32;
         }
 
         #button-container {
@@ -149,20 +160,15 @@
     <h1>Truthfulness Gauge</h1>
     
     <div id="gauge-container">
-        <div id="gauge-bg"></div>
+        <div id="gauge-background">
+            <div id="gauge-segments"></div>
+        </div>
+        <div id="gauge-center"></div>
         <div id="gauge-needle"></div>
         <div class="gauge-labels">
-            <div class="gauge-label left">TRUE</div>
-            <div class="gauge-label right">BULLSHIT</div>
-        </div>
-        <div class="levels">
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
-            <div class="level-marker"></div>
+            <!-- Swapped label positions to match new gradient direction -->
+            <div class="gauge-label left">BULLSHIT</div>
+            <div class="gauge-label right">TRUE</div>
         </div>
         <div id="gauge-text">CHECKING...</div>
         <div id="gauge-percentage">0%</div>
@@ -229,12 +235,12 @@
             { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
             { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF4500" },
             { min: 40, max: 60, text: "QUESTIONABLE", color: "#FFA500" },
-            { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFFF00" },
-            { min: 80, max: 100, text: "FACTUAL", color: "#90EE90" },
-            { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
+            { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFD700" },
+            { min: 80, max: 100, text: "FACTUAL", color: "#32CD32" },
+            { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#32CD32" }
         ];
 
-        // Function to set gauge value
+        // Function to set gauge value (the needle direction logic is now reversed to match the new gradient)
         function setGaugeValue(value) {
             log('Setting gauge value: ' + value);
             
@@ -242,7 +248,8 @@
             const percentage = Math.max(0, Math.min(100, value));
             log('Normalized percentage: ' + percentage);
             
-            // Calculate rotation based on percentage (0% = -90deg, 100% = 90deg)
+            // Calculate rotation based on percentage (-90deg to 90deg)
+            // Now higher percentage means needle points to the right (TRUE)
             const rotation = -90 + (percentage * 180 / 100);
             log('Needle rotation: ' + rotation + 'deg');
             
@@ -348,9 +355,8 @@
                 log('Using score from URL: ' + scoreFromURL);
                 setGaugeValue(scoreFromURL);
             } else {
-                // Otherwise generate a random one
-                log('No valid score in URL, generating random score');
-                generateRandomScore();
+                // Default to needle at 0
+                setGaugeValue(0);
             }
         }
 
@@ -368,6 +374,3 @@
     </script>
 </body>
 </html>
-
-
-
