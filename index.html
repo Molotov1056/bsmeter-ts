@@ -1,182 +1,245 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Truthfulness Gauge</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: white;
-      color: #222;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      height: 100vh;
-    }
-    .gauge-container {
-      position: relative;
-      width: 100%;
-      max-width: 320px;
-      aspect-ratio: 2 / 1;
-      overflow: hidden;
-    }
-    .gauge-arc {
-      width: 100%;
-      height: 200%;
-      background: conic-gradient(
-        #27ae60 0% 20%,
-        #2ecc71 20% 40%,
-        #f1c40f 40% 60%,
-        #e67e22 60% 80%,
-        #e74c3c 80% 100%
+import React, { useState, useEffect } from 'react';
+
+const TruthfulnessGauge = () => {
+  const [value, setValue] = useState(30);
+  const [animating, setAnimating] = useState(false);
+  const [gaugeText, setGaugeText] = useState("");
+
+  // Gauge configuration
+  const min = 0;
+  const max = 100;
+  const radius = 120;
+  const strokeWidth = 30;
+  const startAngle = 180;
+  const endAngle = 0;
+  
+  // Calculate the center point
+  const centerX = radius + strokeWidth;
+  const centerY = radius + strokeWidth;
+  
+  // Calculate the viewBox dimensions
+  const viewBoxWidth = 2 * (radius + strokeWidth);
+  const viewBoxHeight = radius + 2 * strokeWidth;
+  
+  // Convert value to angle
+  const valueToAngle = (val) => {
+    const angle = startAngle - ((val - min) / (max - min)) * (startAngle - endAngle);
+    return angle;
+  };
+  
+  // Calculate needle coordinates
+  const calculateNeedleCoords = (angle) => {
+    const radians = (angle * Math.PI) / 180;
+    const needleLength = radius - 10;
+    const tipX = centerX + needleLength * Math.cos(radians);
+    const tipY = centerY - needleLength * Math.sin(radians);
+    
+    // Calculate points for a triangular needle
+    const baseWidth = 15;
+    const baseRadians = (angle * Math.PI) / 180;
+    const baseLeftX = centerX + baseWidth/2 * Math.cos(baseRadians + Math.PI/2);
+    const baseLeftY = centerY - baseWidth/2 * Math.sin(baseRadians + Math.PI/2);
+    const baseRightX = centerX + baseWidth/2 * Math.cos(baseRadians - Math.PI/2);
+    const baseRightY = centerY - baseWidth/2 * Math.sin(baseRadians - Math.PI/2);
+    
+    return {
+      tipX,
+      tipY,
+      baseLeftX,
+      baseLeftY,
+      baseRightX,
+      baseRightY
+    };
+  };
+  
+  // Generate the colored arc segments
+  const generateSegments = () => {
+    const segments = [
+      { start: 0, end: 20, color: '#FF0000' },    // Red (Bullshit)
+      { start: 20, end: 40, color: '#FF4500' },   // Orange-Red (Mostly False)
+      { start: 40, end: 60, color: '#FFA500' },   // Orange (Questionable)
+      { start: 60, end: 80, color: '#FFFF00' },   // Yellow (Mostly True)
+      { start: 80, end: 100, color: '#00FF00' },  // Green (Truth)
+    ];
+    
+    return segments.map((segment, index) => {
+      const startAngleSegment = valueToAngle(segment.start);
+      const endAngleSegment = valueToAngle(segment.end);
+      
+      // Calculate the SVG arc path
+      const startRadians = (startAngleSegment * Math.PI) / 180;
+      const endRadians = (endAngleSegment * Math.PI) / 180;
+      
+      const startX = centerX + radius * Math.cos(startRadians);
+      const startY = centerY - radius * Math.sin(startRadians);
+      const endX = centerX + radius * Math.cos(endRadians);
+      const endY = centerY - radius * Math.sin(endRadians);
+      
+      // Determine if the arc is large (>180 degrees)
+      const largeArcFlag = Math.abs(endAngleSegment - startAngleSegment) > 180 ? 1 : 0;
+      
+      // In SVG, arcs go clockwise when sweep flag is 1
+      const sweepFlag = startAngleSegment > endAngleSegment ? 1 : 0;
+      
+      const path = `
+        M ${startX} ${startY}
+        A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${endX} ${endY}
+      `;
+      
+      return (
+        <path
+          key={index}
+          d={path}
+          fill="none"
+          stroke={segment.color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        />
       );
-      border-radius: 50%;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    .gauge-cover {
-      width: 60%;
-      height: 60%;
-      background: white;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
-    }
-    .needle {
-      width: 4px;
-      height: 50%;
-      background: black;
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform-origin: bottom center;
-      transform: rotate(-90deg);
-      transition: transform 1s ease-out;
-      z-index: 3;
-    }
-    .labels {
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-weight: bold;
-    }
-    .score {
-      font-size: 2em;
-      margin-top: 16px;
-    }
-    .description {
-      font-size: 1.2em;
-      margin-bottom: 16px;
-    }
-    .buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 1em;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:active {
-      opacity: 0.8;
-    }
-  </style>
-</head>
-<body>
-  <div class="gauge-container">
-    <div class="gauge-arc"></div>
-    <div class="needle" id="needle"></div>
-    <div class="gauge-cover"></div>
-  </div>
+    });
+  };
+  
+  // Truthfulness levels
+  const levels = [
+    { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
+    { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF4500" },
+    { min: 40, max: 60, text: "QUESTIONABLE", color: "#FFA500" },
+    { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFFF00" },
+    { min: 80, max: 100, text: "FACTUAL", color: "#00FF00" },
+    { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
+  ];
 
-  <div class="labels">
-    <span>BULLSHIT</span>
-    <span>TRUE</span>
-  </div>
-
-  <div class="score" id="score">--%</div>
-  <div class="description" id="description">Loading...</div>
-
-  <div class="buttons">
-    <button id="randomBtn">Generate Random Score</button>
-    <button id="closeBtn">Close</button>
-  </div>
-
-  <script>
-    (()=>{
-      const needle = document.getElementById('needle');
-      const scoreText = document.getElementById('score');
-      const description = document.getElementById('description');
-
-      const getDescription = (val) => {
-        if (val < 20) return "COMPLETE BULLSHIT";
-        if (val < 40) return "QUESTIONABLE";
-        if (val < 60) return "MIXED";
-        if (val < 80) return "FACTUAL";
-        return "ABSOLUTE TRUTH";
-      };
-
-      const setGauge = (val, animate = true) => {
-        const angle = (val * 1.8) - 90; // maps 0–100 → -90 to +90
-        needle.style.transition = animate ? 'transform 1s ease-out' : 'none';
-        needle.style.transform = `rotate(${angle}deg)`;
-        scoreText.textContent = `${val}%`;
-        description.textContent = getDescription(val);
-        console.log("Set score:", val);
-        if (window.Telegram?.WebApp?.sendData) {
-          Telegram.WebApp.sendData(JSON.stringify({ score: val }));
-          console.log("Sent to bot:", val);
-        } else {
-          console.warn("Telegram WebApp API not available");
-        }
-      };
-
-      const getInitialScore = () => {
-        const params = new URLSearchParams(location.search);
-        const raw = params.get("score");
-        const val = parseInt(raw, 10);
-        if (!isNaN(val) && val >= 0 && val <= 100) {
-          return val;
-        }
-        const rand = Math.floor(Math.random() * 101);
-        console.log("Invalid or missing score, using random:", rand);
-        return rand;
-      };
-
-      document.getElementById('randomBtn').addEventListener('click', () => {
-        const val = Math.floor(Math.random() * 101);
-        setGauge(val);
-      });
-
-      document.getElementById('closeBtn').addEventListener('click', () => {
-        if (window.Telegram?.WebApp?.close) {
-          Telegram.WebApp.close();
-        } else {
-          console.warn("Telegram WebApp API not available for close");
-        }
-      });
-
-      // Init
-      if (window.Telegram?.WebApp?.ready) {
-        Telegram.WebApp.ready();
+  // Update gauge text based on current value
+  useEffect(() => {
+    for (const level of levels) {
+      if (value >= level.min && value < level.max) {
+        setGaugeText(level.text);
+        break;
       }
-      setGauge(getInitialScore(), false);
-    })();
-  </script>
-</body>
-</html>
+    }
+  }, [value]);
+  
+  // Calculate angle based on current value
+  const angle = valueToAngle(value);
+  const needleCoords = calculateNeedleCoords(angle);
+  
+  // Animate the needle
+  useEffect(() => {
+    if (animating) {
+      const interval = setInterval(() => {
+        setValue((currentValue) => {
+          if (currentValue >= max) {
+            return min;
+          }
+          return currentValue + 1;
+        });
+      }, 50);
+      
+      return () => clearInterval(interval);
+    }
+  }, [animating, max]);
+  
+  // Generate a random score
+  const generateRandomScore = () => {
+    const randomScore = Math.floor(Math.random() * 101);
+    setValue(randomScore);
+  };
+  
+  return (
+    <div className="flex flex-col items-center bg-white p-8 rounded-lg">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Truthfulness Gauge</h1>
+      
+      <svg
+        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+        width="300"
+        height="160"
+        className="mb-2"
+      >
+        {/* Background white arc */}
+        <path
+          d={`
+            M ${centerX - radius} ${centerY}
+            A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}
+          `}
+          fill="none"
+          stroke="#e0e0e0"
+          strokeWidth={strokeWidth + 4}
+          strokeLinecap="round"
+        />
+        
+        {/* Colored segments */}
+        {generateSegments()}
+        
+        {/* Needle */}
+        <polygon
+          points={`
+            ${needleCoords.tipX},${needleCoords.tipY}
+            ${needleCoords.baseLeftX},${needleCoords.baseLeftY}
+            ${centerX},${centerY}
+            ${needleCoords.baseRightX},${needleCoords.baseRightY}
+          `}
+          fill="black"
+        />
+        
+        {/* Center pivot */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r="10"
+          fill="black"
+        />
+      </svg>
+      
+      {/* Labels */}
+      <div className="flex justify-between w-64 mb-2">
+        <div className="font-bold text-green-600">TRUE</div>
+        <div className="font-bold text-red-600">BULLSHIT</div>
+      </div>
+      
+      {/* Level markers */}
+      <div className="w-64 h-1 bg-gray-300 mb-4 flex justify-between">
+        {[0, 1, 2, 3, 4, 5].map((_, index) => (
+          <div key={index} className="w-0.5 h-3 bg-gray-600" />
+        ))}
+      </div>
+      
+      {/* Text and percentage display */}
+      <div className="text-xl font-bold mb-2" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color || "#00FF00" }}>
+        {gaugeText}
+      </div>
+      <div className="text-3xl font-bold mb-6" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color || "#00FF00" }}>
+        {Math.round(value)}%
+      </div>
+      
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={generateRandomScore}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        >
+          Generate Random Score
+        </button>
+        
+        <button
+          onClick={() => setAnimating(!animating)}
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+        >
+          {animating ? "Stop Animation" : "Start Animation"}
+        </button>
+      </div>
+      
+      <div className="flex items-center gap-2 w-64">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={value}
+          onChange={(e) => setValue(parseInt(e.target.value))}
+          disabled={animating}
+          className="w-full"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default TruthfulnessGauge;
