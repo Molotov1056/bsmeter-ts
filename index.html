@@ -12,232 +12,153 @@ const TruthfulnessGauge = () => {
   const strokeWidth = 30;
   const startAngle = 180;
   const endAngle = 0;
-  
-  // Calculate the center point
+
+  // Center of our gauge
   const centerX = radius + strokeWidth;
   const centerY = radius + strokeWidth;
-  
-  // Calculate the viewBox dimensions
-  const viewBoxWidth = 2 * (radius + strokeWidth);
-  const viewBoxHeight = radius + 2 * strokeWidth;
-  
-  // Convert value to angle
-  const valueToAngle = (val) => {
-    const angle = startAngle - ((val - min) / (max - min)) * (startAngle - endAngle);
-    return angle;
-  };
-  
-  // Calculate needle coordinates
-  const calculateNeedleCoords = (angle) => {
-    const radians = (angle * Math.PI) / 180;
-    const needleLength = radius - 10;
-    const tipX = centerX + needleLength * Math.cos(radians);
-    const tipY = centerY - needleLength * Math.sin(radians);
-    
-    // Calculate points for a triangular needle
-    const baseWidth = 15;
-    const baseRadians = (angle * Math.PI) / 180;
-    const baseLeftX = centerX + baseWidth/2 * Math.cos(baseRadians + Math.PI/2);
-    const baseLeftY = centerY - baseWidth/2 * Math.sin(baseRadians + Math.PI/2);
-    const baseRightX = centerX + baseWidth/2 * Math.cos(baseRadians - Math.PI/2);
-    const baseRightY = centerY - baseWidth/2 * Math.sin(baseRadians - Math.PI/2);
-    
-    return {
-      tipX,
-      tipY,
-      baseLeftX,
-      baseLeftY,
-      baseRightX,
-      baseRightY
-    };
-  };
-  
-  // Generate the colored arc segments
-  const generateSegments = () => {
-    const segments = [
-      { start: 0, end: 20, color: '#FF0000' },    // Red (Bullshit)
-      { start: 20, end: 40, color: '#FF4500' },   // Orange-Red (Mostly False)
-      { start: 40, end: 60, color: '#FFA500' },   // Orange (Questionable)
-      { start: 60, end: 80, color: '#FFFF00' },   // Yellow (Mostly True)
-      { start: 80, end: 100, color: '#00FF00' },  // Green (Truth)
-    ];
-    
-    return segments.map((segment, index) => {
-      const startAngleSegment = valueToAngle(segment.start);
-      const endAngleSegment = valueToAngle(segment.end);
-      
-      // Calculate the SVG arc path
-      const startRadians = (startAngleSegment * Math.PI) / 180;
-      const endRadians = (endAngleSegment * Math.PI) / 180;
-      
-      const startX = centerX + radius * Math.cos(startRadians);
-      const startY = centerY - radius * Math.sin(startRadians);
-      const endX = centerX + radius * Math.cos(endRadians);
-      const endY = centerY - radius * Math.sin(endRadians);
-      
-      // Determine if the arc is large (>180 degrees)
-      const largeArcFlag = Math.abs(endAngleSegment - startAngleSegment) > 180 ? 1 : 0;
-      
-      // In SVG, arcs go clockwise when sweep flag is 1
-      const sweepFlag = startAngleSegment > endAngleSegment ? 1 : 0;
-      
-      const path = `
-        M ${startX} ${startY}
-        A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${endX} ${endY}
-      `;
-      
+
+  // SVG viewBox size
+  const viewBoxWidth = (radius + strokeWidth) * 2;
+  const viewBoxHeight = radius + strokeWidth * 2;
+
+  // Map a value [0..100] → angle [180..0]
+  const valueToAngle = (v) =>
+    startAngle - ((v - min) / (max - min)) * (startAngle - endAngle);
+
+  // New: a simpler set of colored segments, left→right: green → yellow → orange → red
+  const segments = [
+    { start: 0,   end: 20,  color: "#00FF00" },
+    { start: 20,  end: 40,  color: "#FFFF00" },
+    { start: 40,  end: 60,  color: "#FFA500" },
+    { start: 60,  end: 80,  color: "#FF4500" },
+    { start: 80,  end: 100, color: "#FF0000" },
+  ];
+
+  const generateSegments = () =>
+    segments.map(({ start, end, color }, i) => {
+      const a1 = (valueToAngle(start) * Math.PI) / 180;
+      const a2 = (valueToAngle(end) * Math.PI) / 180;
+
+      const x1 = centerX + radius * Math.cos(a1);
+      const y1 = centerY - radius * Math.sin(a1);
+      const x2 = centerX + radius * Math.cos(a2);
+      const y2 = centerY - radius * Math.sin(a2);
+
+      // Always < 180° arcs here
+      const largeArcFlag = 0;
+      // Sweep clockwise
+      const sweepFlag = 1;
+
+      const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2}`;
+
       return (
         <path
-          key={index}
-          d={path}
+          key={i}
+          d={d}
           fill="none"
-          stroke={segment.color}
+          stroke={color}
           strokeWidth={strokeWidth}
-          strokeLinecap="round"
+          strokeLinecap="butt"
         />
       );
     });
-  };
-  
-  // Truthfulness levels
+
+  // Text labels & colors
   const levels = [
-    { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
-    { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF4500" },
-    { min: 40, max: 60, text: "QUESTIONABLE", color: "#FFA500" },
-    { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFFF00" },
-    { min: 80, max: 100, text: "FACTUAL", color: "#00FF00" },
-    { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
+    { min: 0,  max: 20,  text: "COMPLETE BULLSHIT", color: "#FF0000" },
+    { min: 20, max: 40,  text: "MOSTLY FALSE",     color: "#FF4500" },
+    { min: 40, max: 60,  text: "QUESTIONABLE",     color: "#FFA500" },
+    { min: 60, max: 80,  text: "MOSTLY TRUE",      color: "#FFFF00" },
+    { min: 80, max: 100, text: "FACTUAL",          color: "#00FF00" },
+    { min: 100, max: 101,text: "ABSOLUTE TRUTH",   color: "#00FF00" },
   ];
 
-  // Update gauge text based on current value
   useEffect(() => {
-    for (const level of levels) {
-      if (value >= level.min && value < level.max) {
-        setGaugeText(level.text);
+    for (let lvl of levels) {
+      if (value >= lvl.min && value < lvl.max) {
+        setGaugeText(lvl.text);
         break;
       }
     }
   }, [value]);
-  
-  // Calculate angle based on current value
-  const angle = valueToAngle(value);
-  const needleCoords = calculateNeedleCoords(angle);
-  
-  // Animate the needle
+
+  // Animate needle if requested
   useEffect(() => {
-    if (animating) {
-      const interval = setInterval(() => {
-        setValue((currentValue) => {
-          if (currentValue >= max) {
-            return min;
-          }
-          return currentValue + 1;
-        });
-      }, 50);
-      
-      return () => clearInterval(interval);
-    }
-  }, [animating, max]);
-  
-  // Generate a random score
-  const generateRandomScore = () => {
-    const randomScore = Math.floor(Math.random() * 101);
-    setValue(randomScore);
-  };
-  
+    if (!animating) return;
+    const iv = setInterval(() => {
+      setValue((v) => (v >= max ? min : v + 1));
+    }, 50);
+    return () => clearInterval(iv);
+  }, [animating]);
+
+  const generateRandomScore = () =>
+    setValue(Math.floor(Math.random() * 101));
+
+  // Compute the current angle
+  const angle = valueToAngle(value);
+
   return (
     <div className="flex flex-col items-center bg-white p-8 rounded-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Truthfulness Gauge</h1>
-      
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        Truthfulness Gauge
+      </h1>
+
       <svg
         viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
         width="300"
         height="160"
         className="mb-2"
       >
-        {/* Background white arc */}
-        <path
-          d={`
-            M ${centerX - radius} ${centerY}
-            A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}
-          `}
-          fill="none"
-          stroke="#e0e0e0"
-          strokeWidth={strokeWidth + 4}
-          strokeLinecap="round"
-        />
-        
-        {/* Colored segments */}
         {generateSegments()}
-        
-        {/* Needle */}
-        <polygon
-          points={`
-            ${needleCoords.tipX},${needleCoords.tipY}
-            ${needleCoords.baseLeftX},${needleCoords.baseLeftY}
-            ${centerX},${centerY}
-            ${needleCoords.baseRightX},${needleCoords.baseRightY}
-          `}
-          fill="black"
+
+        {/* Needle as a line, rotated around the center */}
+        <line
+          x1={centerX}
+          y1={centerY}
+          x2={centerX}
+          y2={centerY - (radius - 10)}
+          stroke="black"
+          strokeWidth="4"
+          strokeLinecap="round"
+          transform={`rotate(${angle} ${centerX} ${centerY})`}
+          style={{ transition: "transform 0.3s ease-out" }}
         />
-        
+
         {/* Center pivot */}
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r="10"
-          fill="black"
-        />
+        <circle cx={centerX} cy={centerY} r="6" fill="black" />
       </svg>
-      
-      {/* Labels */}
-      <div className="flex justify-between w-64 mb-2">
-        <div className="font-bold text-green-600">TRUE</div>
-        <div className="font-bold text-red-600">BULLSHIT</div>
-      </div>
-      
-      {/* Level markers */}
-      <div className="w-64 h-1 bg-gray-300 mb-4 flex justify-between">
-        {[0, 1, 2, 3, 4, 5].map((_, index) => (
-          <div key={index} className="w-0.5 h-3 bg-gray-600" />
-        ))}
-      </div>
-      
-      {/* Text and percentage display */}
-      <div className="text-xl font-bold mb-2" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color || "#00FF00" }}>
+
+      <div className="text-xl font-bold mb-1" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color }}>
         {gaugeText}
       </div>
-      <div className="text-3xl font-bold mb-6" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color || "#00FF00" }}>
+      <div className="text-3xl font-bold mb-4" style={{ color: levels.find(l => value >= l.min && value < l.max)?.color }}>
         {Math.round(value)}%
       </div>
-      
+
       <div className="flex gap-4 mb-4">
         <button
           onClick={generateRandomScore}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
-          Generate Random Score
+          Random
         </button>
-        
         <button
           onClick={() => setAnimating(!animating)}
           className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
         >
-          {animating ? "Stop Animation" : "Start Animation"}
+          {animating ? "Stop" : "Animate"}
         </button>
       </div>
-      
-      <div className="flex items-center gap-2 w-64">
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={value}
-          onChange={(e) => setValue(parseInt(e.target.value))}
-          disabled={animating}
-          className="w-full"
-        />
-      </div>
+
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => setValue(+e.target.value)}
+        disabled={animating}
+        className="w-64"
+      />
     </div>
   );
 };
