@@ -1,0 +1,20 @@
+# Dependencies
+/node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build outputs
+/dist
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db

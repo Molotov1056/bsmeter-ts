@@ -1,0 +1,110 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+#gauge-container {
+    position: relative;
+    width: 300px;
+    height: 160px;
+    margin-bottom: 30px;
+}
+
+#gauge-svg {
+    width: 300px;
+    height: 160px;
+}
+
+.gauge-labels {
+    position: relative;
+    width: 270px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.gauge-label {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.left {
+    color: #00FF00;
+}
+
+.right {
+    color: #FF0000;
+}
+
+.levels {
+    position: relative;
+    width: 270px;
+    height: 10px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.level-marker {
+    width: 2px;
+    height: 10px;
+    background-color: #333;
+}
+
+#gauge-text {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+#gauge-percentage {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 300px;
+}
+
+#button-container {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #2AABEE;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1D8FBF;
+}
+
+#value-slider {
+    width: 100%;
+}
