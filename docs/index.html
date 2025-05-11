@@ -161,7 +161,7 @@
     <div id="controls">
         <div id="button-container">
             <button id="random-btn">Generate Random Score</button>
-            <button id="animate-btn">Animate</button>
+            <button id="animate-btn">Illustrate</button>
         </div>
         
         <input type="range" id="value-slider" min="0" max="100" value="30">
@@ -285,7 +285,7 @@
         function toggleAnimation() {
             if (isAnimating) {
                 clearInterval(animationInterval);
-                animateBtn.textContent = "Animate";
+                animateBtn.textContent = "Illustrate";
                 isAnimating = false;
             } else {
                 animationInterval = setInterval(() => {
