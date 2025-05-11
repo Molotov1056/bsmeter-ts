@@ -11,13 +11,32 @@ A Telegram mini-app that detects fake news and bias with a visual truthfulness g
 
 ## Development
 
-Currently, this project is being maintained as a pure HTML/CSS/JavaScript solution. Future development will migrate to TypeScript.
+This project has been migrated to TypeScript for improved type safety and maintainability.
 
-## Usage
+### Setup
 
-1. Open the gauge
-2. Enter text to analyze (or use test features)
-3. View the truthfulness rating on the gauge
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Build and deploy to GitHub Pages
+npm run deploy
+```
+
+### Project Structure
+
+- `src/` - Source code
+  - `index.ts` - Main application entry point
+  - `gauge-service.ts` - Gauge functionality service
+  - `types.ts` - TypeScript interfaces
+  - `styles.css` - Styles
+  - `index.html` - HTML template
 
 ## GitHub Pages
 

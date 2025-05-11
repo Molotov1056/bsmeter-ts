@@ -1,35 +1,20 @@
 # Dependencies
-node_modules/
+/node_modules
 npm-debug.log
 yarn-error.log
-yarn-debug.log
-.pnp
-.pnp.js
+package-lock.json
 
 # Build outputs
-dist/
-build/
-out/
-.next/
-.nuxt/
-.cache/
+/dist
 
-# Development environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# IDE and editors
+# IDEs and editors
 .idea/
 .vscode/
 *.sublime-project
 *.sublime-workspace
 .project
 .classpath
-.settings/
-*.swp
-*.swo
+
+# OS files
 .DS_Store
 Thumbs.db
