@@ -12,6 +12,8 @@ A Telegram mini-app that detects fake news and bias with a visual truthfulness g
 
 ## Development
 
+This project has been migrated to TypeScript for improved type safety and maintainability.
+
 ### Setup
 
 ```bash
@@ -39,4 +41,4 @@ npm run deploy
 
 ## GitHub Pages
 
-This project is built to be hosted on GitHub Pages
+This project is hosted on GitHub Pages at: [https://molotov1056.github.io/bsmeter-ts/](https://molotov1056.github.io/bsmeter-ts/)

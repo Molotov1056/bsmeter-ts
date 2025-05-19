@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A Telegram mini-app that detects fake news and bias with a visual truthfulness gauge.",
   "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --mode development",
@@ -20,7 +23,15 @@
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Molotov1056/bsmeter-ts.git"
+  },
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Molotov1056/bsmeter-ts/issues"
+  },
+  "homepage": "https://github.com/Molotov1056/bsmeter-ts#readme"
 }
