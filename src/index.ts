@@ -67,26 +67,17 @@ class BSMeter {
         this.gaugeService.getSegments().forEach(segment => {
             const { startX, startY, endX, endY, largeArcFlag } = this.gaugeService.getSegmentPathData(segment);
             
-            // Create path for segment
+            // Create a filled segment
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("d", `M ${startX} ${startY} A ${120} ${120} 0 ${largeArcFlag} 1 ${endX} ${endY}`);
-            path.setAttribute("fill", "none");
-            path.setAttribute("stroke", segment.color);
-            path.setAttribute("stroke-width", "28");  // Slightly thinner to see gaps
-            path.setAttribute("stroke-linecap", "butt"); // Changed to butt to see clear segments
             
-            // Add a small gap between segments
+            // Build path for a filled sector (from center to arc)
+            path.setAttribute("d", `M 150 150 L ${startX} ${startY} A ${120} ${120} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`);
+            path.setAttribute("fill", segment.color);
+            path.setAttribute("stroke", "white");
+            path.setAttribute("stroke-width", "1");
+            path.setAttribute("stroke-opacity", "0.7");
+            
             this.gaugeSegments?.appendChild(path);
-            
-            // Add segment border
-            const border = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            border.setAttribute("d", `M ${startX} ${startY} A ${120} ${120} 0 ${largeArcFlag} 1 ${endX} ${endY}`);
-            border.setAttribute("fill", "none");
-            border.setAttribute("stroke", "white");
-            border.setAttribute("stroke-width", "1");
-            border.setAttribute("stroke-opacity", "0.7");
-            
-            this.gaugeSegments?.appendChild(border);
         });
     }
 

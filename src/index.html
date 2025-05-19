@@ -10,21 +10,21 @@
     
     <div id="gauge-container">
         <svg id="gauge-svg" viewBox="0 0 300 200">
-            <!-- White background arc -->
-            <path id="gauge-bg" 
+            <!-- Background arc is no longer needed since we're using filled segments -->
+            <!-- <path id="gauge-bg" 
                   d="M 30 150 A 120 120 0 0 1 270 150" 
                   fill="none" 
                   stroke="#e0e0e0" 
                   stroke-width="28" 
-                  stroke-linecap="butt"></path>
+                  stroke-linecap="butt"></path> -->
             
             <!-- Colored segments will be added by JavaScript -->
             <g id="segments"></g>
             
             <!-- Needle -->
             <g id="needle">
-                <path d="M 150,150 L 148,50 L 152,50 Z" fill="black"></path>
-                <circle cx="150" cy="150" r="10" fill="black"></circle>
+                <path d="M 150,150 L 148,50 L 152,50 Z" fill="#333333"></path>
+                <circle cx="150" cy="150" r="10" fill="#444444"></circle>
             </g>
         </svg>
     </div>
