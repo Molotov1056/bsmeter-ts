@@ -11,21 +11,25 @@ export class GaugeService {
 
     // Truthfulness levels
     private levels: Level[] = [
-        { min: 0, max: 20, text: "COMPLETE BULLSHIT", color: "#FF0000" },
-        { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF4500" },
-        { min: 40, max: 60, text: "QUESTIONABLE", color: "#FFA500" },
-        { min: 60, max: 80, text: "MOSTLY TRUE", color: "#FFFF00" },
-        { min: 80, max: 100, text: "FACTUAL", color: "#00FF00" },
+        { min: 0, max: 14.28, text: "COMPLETE BULLSHIT", color: "#FF0000" },
+        { min: 14.28, max: 28.57, text: "VERY FALSE", color: "#FF3300" },
+        { min: 28.57, max: 42.85, text: "MOSTLY FALSE", color: "#FF6600" },
+        { min: 42.85, max: 57.14, text: "QUESTIONABLE", color: "#FF9900" },
+        { min: 57.14, max: 71.42, text: "PARTIALLY TRUE", color: "#FFCC00" },
+        { min: 71.42, max: 85.71, text: "MOSTLY TRUE", color: "#FFFF00" },
+        { min: 85.71, max: 100, text: "FACTUAL", color: "#00FF00" },
         { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#00FF00" }
     ];
     
-    // Segments for the gauge
+    // Segments for the gauge - in order from left to right (bullshit to true)
     private segments: Segment[] = [
-        { start: 0, end: 20, color: "#FF0000" },   // Red
-        { start: 20, end: 40, color: "#FF4500" },  // Orange-Red
-        { start: 40, end: 60, color: "#FFA500" },  // Orange
-        { start: 60, end: 80, color: "#FFFF00" },  // Yellow
-        { start: 80, end: 100, color: "#00FF00" }  // Green
+        { start: 0, end: 14.28, color: "#FF0000" },    // Red (leftmost - bullshit)
+        { start: 14.28, end: 28.57, color: "#FF3300" }, // Red-Orange
+        { start: 28.57, end: 42.85, color: "#FF6600" }, // Orange-Red
+        { start: 42.85, end: 57.14, color: "#FF9900" }, // Orange
+        { start: 57.14, end: 71.42, color: "#FFCC00" }, // Yellow-Orange
+        { start: 71.42, end: 85.71, color: "#FFFF00" }, // Yellow
+        { start: 85.71, end: 100, color: "#00FF00" }    // Green (rightmost - true)
     ];
 
     // Convert value to angle

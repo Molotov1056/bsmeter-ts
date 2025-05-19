@@ -72,10 +72,21 @@ class BSMeter {
             path.setAttribute("d", `M ${startX} ${startY} A ${120} ${120} 0 ${largeArcFlag} 1 ${endX} ${endY}`);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", segment.color);
-            path.setAttribute("stroke-width", "30");
-            path.setAttribute("stroke-linecap", "butt");
+            path.setAttribute("stroke-width", "28");  // Slightly thinner to see gaps
+            path.setAttribute("stroke-linecap", "butt"); // Changed to butt to see clear segments
             
+            // Add a small gap between segments
             this.gaugeSegments?.appendChild(path);
+            
+            // Add segment border
+            const border = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            border.setAttribute("d", `M ${startX} ${startY} A ${120} ${120} 0 ${largeArcFlag} 1 ${endX} ${endY}`);
+            border.setAttribute("fill", "none");
+            border.setAttribute("stroke", "white");
+            border.setAttribute("stroke-width", "1");
+            border.setAttribute("stroke-opacity", "0.7");
+            
+            this.gaugeSegments?.appendChild(border);
         });
     }
 
