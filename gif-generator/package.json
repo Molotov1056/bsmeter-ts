@@ -1,0 +1,16 @@
+{
+  "name": "bs-meter-gif-generator",
+  "version": "1.0.0",
+  "description": "Generate animated BS meter GIFs for different score ranges",
+  "main": "generate-gifs-puppeteer.js",
+  "scripts": {
+    "generate": "node generate-gifs-puppeteer.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "puppeteer": "^22.15.0",
+    "sharp": "^0.33.5"
+  },
+  "author": "BS Meter",
+  "license": "MIT"
+}
