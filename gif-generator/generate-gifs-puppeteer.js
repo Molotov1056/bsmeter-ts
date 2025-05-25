@@ -150,7 +150,7 @@ class BSMeterGIFGeneratorPuppeteer {
             
             const html = this.generateHTML(currentScore);
             await page.setContent(html);
-            await page.waitForTimeout(100); // Wait for render
+            await new Promise(resolve => setTimeout(resolve, 100)); // Wait for render
             
             const frameFile = path.join(tempDir, `frame_${frame.toString().padStart(3, '0')}.png`);
             await page.screenshot({ 
