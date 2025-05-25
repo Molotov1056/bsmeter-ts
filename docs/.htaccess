@@ -1,3 +1,32 @@
-Cache-Control: no-cache, no-store, must-revalidate
-Pragma: no-cache
-Expires: 0
+# Cache Control
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</IfModule>
+
+# Content-Type Headers for Telegram Web Apps
+<IfModule mod_mime.c>
+    AddType text/html .html
+    AddType application/javascript .js
+    AddType text/css .css
+</IfModule>
+
+# Ensure HTML files are served with correct content-type
+<Files "*.html">
+    ForceType text/html
+    Header set Content-Type "text/html; charset=utf-8"
+</Files>
+
+# Ensure JavaScript files are served correctly
+<Files "*.js">
+    ForceType application/javascript
+    Header set Content-Type "application/javascript; charset=utf-8"
+</Files>
+
+# Security headers for Telegram Web Apps
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>

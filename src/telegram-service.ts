@@ -60,13 +60,27 @@ export class TelegramService {
                 console.log('Found start_param in initDataUnsafe:', startParam);
                 
                 if (startParam) {
-                    const decodedData = atob(startParam);
+                    // Decode URL encoding first, then base64
+                    const urlDecodedParam = decodeURIComponent(startParam);
+                    const decodedData = atob(urlDecodedParam);
                     const bsMeterData: BSMeterData = JSON.parse(decodedData);
                     console.log('Successfully parsed BS Meter data from Telegram:', bsMeterData);
                     return bsMeterData;
                 }
             } catch (error) {
                 console.error('Error parsing Telegram initDataUnsafe:', error);
+                // Try without URL decoding as fallback
+                try {
+                    const startParam = this.webApp.initDataUnsafe.start_param;
+                    if (startParam) {
+                        const decodedData = atob(startParam);
+                        const bsMeterData: BSMeterData = JSON.parse(decodedData);
+                        console.log('Successfully parsed BS Meter data from Telegram (fallback):', bsMeterData);
+                        return bsMeterData;
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback parsing also failed:', fallbackError);
+                }
             }
         }
         
@@ -77,13 +91,28 @@ export class TelegramService {
             console.log('Found startapp in URL:', startParam);
             
             if (startParam) {
-                const decodedData = atob(startParam);
+                // Decode URL encoding first, then base64
+                const urlDecodedParam = decodeURIComponent(startParam);
+                const decodedData = atob(urlDecodedParam);
                 const bsMeterData: BSMeterData = JSON.parse(decodedData);
                 console.log('Successfully parsed BS Meter data from URL:', bsMeterData);
                 return bsMeterData;
             }
         } catch (error) {
             console.error('Error parsing URL parameters:', error);
+            // Try without URL decoding as fallback
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const startParam = urlParams.get('startapp');
+                if (startParam) {
+                    const decodedData = atob(startParam);
+                    const bsMeterData: BSMeterData = JSON.parse(decodedData);
+                    console.log('Successfully parsed BS Meter data from URL (fallback):', bsMeterData);
+                    return bsMeterData;
+                }
+            } catch (fallbackError) {
+                console.error('URL fallback parsing also failed:', fallbackError);
+            }
         }
         
         // Method 3: Try different Telegram data sources
@@ -96,13 +125,28 @@ export class TelegramService {
                 console.log('Found start_param in raw initData:', startParam);
                 
                 if (startParam) {
-                    const decodedData = atob(startParam);
+                    // Decode URL encoding first, then base64
+                    const urlDecodedParam = decodeURIComponent(startParam);
+                    const decodedData = atob(urlDecodedParam);
                     const bsMeterData: BSMeterData = JSON.parse(decodedData);
                     console.log('Successfully parsed BS Meter data from raw initData:', bsMeterData);
                     return bsMeterData;
                 }
             } catch (error) {
                 console.error('Error parsing raw initData:', error);
+                // Try without URL decoding as fallback
+                try {
+                    const params = new URLSearchParams(this.webApp.initData);
+                    const startParam = params.get('start_param');
+                    if (startParam) {
+                        const decodedData = atob(startParam);
+                        const bsMeterData: BSMeterData = JSON.parse(decodedData);
+                        console.log('Successfully parsed BS Meter data from raw initData (fallback):', bsMeterData);
+                        return bsMeterData;
+                    }
+                } catch (fallbackError) {
+                    console.error('Raw initData fallback parsing also failed:', fallbackError);
+                }
             }
         }
         
