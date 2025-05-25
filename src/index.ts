@@ -1,8 +1,11 @@
 import './styles.css';
 import { GaugeService } from './gauge-service';
+import { TelegramService } from './telegram-service';
+import { BSMeterData } from './types';
 
 class BSMeter {
     private gaugeService: GaugeService;
+    private telegramService: TelegramService;
     
     // Elements
     private gaugeSegments: HTMLElement | null;
@@ -17,9 +20,11 @@ class BSMeter {
     private currentValue: number = 30;
     private animationInterval: number | null = null;
     private isAnimating: boolean = false;
+    private bsMeterData: BSMeterData | null = null;
 
     constructor() {
         this.gaugeService = new GaugeService();
+        this.telegramService = new TelegramService();
 
         // Get DOM elements
         this.gaugeSegments = document.getElementById('segments');
@@ -42,13 +47,47 @@ class BSMeter {
     }
 
     private init(): void {
+        console.log('=== BS METER INITIALIZATION ===');
+        
+        // Initialize Telegram Web App
+        this.telegramService.initialize();
+        
+        // Try to get data from Telegram
+        this.bsMeterData = this.telegramService.getBSMeterData();
+        console.log('BS Meter Data received:', this.bsMeterData);
+        
         // Create gauge segments
         this.createGaugeSegments();
         
-        // Set initial value
+        // Set initial value based on Telegram data or default
+        const initialScore = this.telegramService.getOverallScore();
+        console.log('Initial score from Telegram:', initialScore);
+        
+        if (initialScore !== null) {
+            // Convert from 0-1 scale to 0-100 scale
+            this.currentValue = Math.round(initialScore * 100);
+            console.log(`✅ Setting gauge to Telegram score: ${this.currentValue}%`);
+        } else {
+            console.log(`⚠️ No Telegram score found, using default: ${this.currentValue}%`);
+        }
+        
         this.setGaugeValue(this.currentValue);
         
         // Add event listeners
+        this.setupEventListeners();
+        
+        // Show category breakdown if available
+        if (this.bsMeterData) {
+            console.log('✅ Category data available, setting up category view');
+            this.setupCategoryView();
+        } else {
+            console.log('⚠️ No category data available');
+        }
+        
+        console.log('=== BS METER INITIALIZATION COMPLETE ===');
+    }
+
+    private setupEventListeners(): void {
         this.randomBtn?.addEventListener('click', () => this.generateRandomScore());
         this.animateBtn?.addEventListener('click', () => this.toggleAnimation());
         this.valueSlider?.addEventListener('input', (e) => {
@@ -57,6 +96,30 @@ class BSMeter {
                 this.setGaugeValue(parseInt(inputElement.value));
             }
         });
+    }
+
+    private setupCategoryView(): void {
+        if (!this.bsMeterData) return;
+        
+        // Add a button to show category breakdown
+        this.telegramService.showMainButton('View Category Breakdown', () => {
+            this.showCategoryBreakdown();
+        });
+    }
+
+    private showCategoryBreakdown(): void {
+        if (!this.bsMeterData) return;
+        
+        const categories = this.bsMeterData.categories;
+        let breakdown = 'Category Breakdown:\n\n';
+        
+        Object.entries(categories).forEach(([key, data]) => {
+            const formattedName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const scorePercent = Math.round(data.score * 100);
+            breakdown += `${formattedName}: ${scorePercent}%\n`;
+        });
+        
+        alert(breakdown); // Simple alert for now - could be replaced with better UI
     }
 
     private createGaugeSegments(): void {
