@@ -5,6 +5,10 @@
   "main": "generate-gifs-puppeteer.js",
   "scripts": {
     "generate": "node generate-gifs-puppeteer.js",
+    "generate:zones": "node generate-zone-gifs.js",
+    "generate:sample": "node generate-individual-gifs.js sample",
+    "generate:all": "node generate-individual-gifs.js all",
+    "generate:range": "node generate-individual-gifs.js range",
     "install-deps": "npm install"
   },
   "dependencies": {
