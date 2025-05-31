@@ -1,35 +1,30 @@
 import { Level, Segment } from './types';
 
 export class GaugeService {
-    private centerX: number = 150;
-    private centerY: number = 150;
-    private radius: number = 120;
+    private centerX: number = 200;
+    private centerY: number = 200;
+    private radius: number = 160;
     private min: number = 0;
     private max: number = 100;
     private startAngle: number = 180;
     private endAngle: number = 0;
 
-    // Truthfulness levels
+    // Truthfulness levels - 5 categories with muted colors
     private levels: Level[] = [
-        { min: 0, max: 14.28, text: "COMPLETE BULLSHIT", color: "#D32F2F" },
-        { min: 14.28, max: 28.57, text: "VERY FALSE", color: "#E64A19" },
-        { min: 28.57, max: 42.85, text: "MOSTLY FALSE", color: "#F57C00" },
-        { min: 42.85, max: 57.14, text: "QUESTIONABLE", color: "#FF9800" },
-        { min: 57.14, max: 71.42, text: "PARTIALLY TRUE", color: "#FFC107" },
-        { min: 71.42, max: 85.71, text: "MOSTLY TRUE", color: "#CDDC39" },
-        { min: 85.71, max: 100, text: "FACTUAL", color: "#4CAF50" },
-        { min: 100, max: 101, text: "ABSOLUTE TRUTH", color: "#4CAF50" }
+        { min: 0, max: 20, text: "BULLSHIT", color: "#E53E3E" },        // Muted Red
+        { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF8C00" },   // Muted Orange
+        { min: 40, max: 60, text: "QUESTIONABLE", color: "#F6AD55" },   // Muted Yellow-Orange
+        { min: 60, max: 80, text: "MOSTLY TRUE", color: "#68D391" },    // Muted Green
+        { min: 80, max: 100, text: "FACTUAL", color: "#38A169" }        // Muted Dark Green
     ];
     
-    // Segments for the gauge - in order from left to right (bullshit to true)
+    // Segments for the gauge - 5 segments with muted colors
     private segments: Segment[] = [
-        { start: 0, end: 14.28, color: "#D32F2F" },    // Darker Red (leftmost - bullshit)
-        { start: 14.28, end: 28.57, color: "#E64A19" }, // Darker Red-Orange
-        { start: 28.57, end: 42.85, color: "#F57C00" }, // Darker Orange-Red
-        { start: 42.85, end: 57.14, color: "#FF9800" }, // Muted Orange
-        { start: 57.14, end: 71.42, color: "#FFC107" }, // Muted Yellow-Orange
-        { start: 71.42, end: 85.71, color: "#CDDC39" }, // Muted Lime
-        { start: 85.71, end: 100, color: "#4CAF50" }    // Darker Green (rightmost - true)
+        { start: 0, end: 20, color: "#E53E3E" },      // BULLSHIT - Muted Red
+        { start: 20, end: 40, color: "#FF8C00" },     // MOSTLY FALSE - Muted Orange
+        { start: 40, end: 60, color: "#F6AD55" },     // QUESTIONABLE - Muted Yellow-Orange
+        { start: 60, end: 80, color: "#68D391" },     // MOSTLY TRUE - Muted Green
+        { start: 80, end: 100, color: "#38A169" }     // FACTUAL - Muted Dark Green
     ];
 
     // Convert value to angle
@@ -89,5 +84,39 @@ export class GaugeService {
     // Generate a random score
     public generateRandomScore(): number {
         return Math.floor(Math.random() * 101);
+    }
+
+    // Get label position for a segment
+    public getSegmentLabelPosition(segment: Segment): { x: number; y: number; rotation: number } {
+        const midValue = (segment.start + segment.end) / 2;
+        const angle = this.valueToAngle(midValue);
+        const angleRad = this.toRadians(angle);
+        
+        // Position label at 70% of radius for better readability
+        const labelRadius = this.radius * 0.7;
+        const x = this.centerX + labelRadius * Math.cos(angleRad);
+        const y = this.centerY - labelRadius * Math.sin(angleRad);
+        
+        // Calculate rotation for text (make it readable)
+        let rotation = angle - 90;
+        if (rotation > 90) rotation -= 180;
+        if (rotation < -90) rotation += 180;
+        
+        return { x, y, rotation };
+    }
+
+    // Get short label text for segments
+    public getSegmentShortLabel(segment: Segment): string {
+        const level = this.levels.find(l => l.min === segment.start);
+        if (!level) return '';
+        
+        switch (level.text) {
+            case 'BULLSHIT': return 'BS';
+            case 'MOSTLY FALSE': return 'FALSE';
+            case 'QUESTIONABLE': return '?';
+            case 'MOSTLY TRUE': return 'TRUE';
+            case 'FACTUAL': return 'FACT';
+            default: return '';
+        }
     }
 }

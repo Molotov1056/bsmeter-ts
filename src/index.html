@@ -10,22 +10,14 @@
     <h1>Truthfulness Gauge</h1>
     
     <div id="gauge-container">
-        <svg id="gauge-svg" viewBox="0 0 300 200">
-            <!-- Background arc is no longer needed since we're using filled segments -->
-            <!-- <path id="gauge-bg" 
-                  d="M 30 150 A 120 120 0 0 1 270 150" 
-                  fill="none" 
-                  stroke="#e0e0e0" 
-                  stroke-width="28" 
-                  stroke-linecap="butt"></path> -->
-            
+        <svg id="gauge-svg" viewBox="0 0 400 260">
             <!-- Colored segments will be added by JavaScript -->
             <g id="segments"></g>
             
-            <!-- Needle -->
+            <!-- Needle - pointing outward -->
             <g id="needle">
-                <path d="M 150,150 L 148,50 L 152,50 Z" fill="#333333"></path>
-                <circle cx="150" cy="150" r="10" fill="#444444"></circle>
+                <path d="M 200,200 L 197,35 L 200,30 L 203,35 Z" fill="#333333" stroke="#222" stroke-width="0.5"></path>
+                <circle cx="200" cy="200" r="10" fill="#444444" stroke="#333" stroke-width="1"></circle>
             </g>
         </svg>
     </div>

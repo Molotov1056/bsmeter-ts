@@ -17,19 +17,19 @@ h1 {
 
 #gauge-container {
     position: relative;
-    width: 300px;
-    height: 180px;
+    width: 400px;
+    height: 240px;
     margin-bottom: 20px;
 }
 
 #gauge-svg {
-    width: 300px;
-    height: 180px;
+    width: 400px;
+    height: 240px;
 }
 
 .gauge-labels {
     position: relative;
-    width: 270px;
+    width: 360px;
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
@@ -41,11 +41,11 @@ h1 {
 }
 
 .left {
-    color: #D32F2F;
+    color: #E53E3E;
 }
 
 .right {
-    color: #4CAF50;
+    color: #38A169;
 }
 
 #gauge-text {

@@ -5,25 +5,25 @@ const { execSync } = require('child_process');
 
 class BSMeterZoneGIFGenerator {
     constructor() {
-        this.width = 400;
-        this.height = 300;
+        this.width = 500;
+        this.height = 350;
         
-        // 5 Color zones - simplified from 7 segments
+        // 5 Color zones - muted colors
         this.segments = [
-            { start: 0, end: 20, color: "#D32F2F" },      // BULLSHIT
-            { start: 20, end: 40, color: "#FF5722" },     // MOSTLY FALSE  
-            { start: 40, end: 60, color: "#FF9800" },     // QUESTIONABLE
-            { start: 60, end: 80, color: "#8BC34A" },     // MOSTLY TRUE
-            { start: 80, end: 100, color: "#4CAF50" }     // FACTUAL
+            { start: 0, end: 20, color: "#E53E3E" },      // BULLSHIT - Muted Red
+            { start: 20, end: 40, color: "#FF8C00" },     // MOSTLY FALSE - Muted Orange 
+            { start: 40, end: 60, color: "#F6AD55" },     // QUESTIONABLE - Muted Yellow-Orange
+            { start: 60, end: 80, color: "#68D391" },     // MOSTLY TRUE - Muted Green
+            { start: 80, end: 100, color: "#38A169" }     // FACTUAL - Muted Dark Green
         ];
         
-        // 5 Zone definitions
+        // 5 Zone definitions with updated colors
         this.zones = [
-            { min: 0, max: 20, text: "BULLSHIT", color: "#D32F2F", pointerPosition: 10 },
-            { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF5722", pointerPosition: 30 },
-            { min: 40, max: 60, text: "QUESTIONABLE", color: "#FF9800", pointerPosition: 50 },
-            { min: 60, max: 80, text: "MOSTLY TRUE", color: "#8BC34A", pointerPosition: 70 },
-            { min: 80, max: 100, text: "FACTUAL", color: "#4CAF50", pointerPosition: 90 }
+            { min: 0, max: 20, text: "BULLSHIT", color: "#E53E3E", pointerPosition: 10 },
+            { min: 20, max: 40, text: "MOSTLY FALSE", color: "#FF8C00", pointerPosition: 30 },
+            { min: 40, max: 60, text: "QUESTIONABLE", color: "#F6AD55", pointerPosition: 50 },
+            { min: 60, max: 80, text: "MOSTLY TRUE", color: "#68D391", pointerPosition: 70 },
+            { min: 80, max: 100, text: "FACTUAL", color: "#38A169", pointerPosition: 90 }
         ];
     }
     
@@ -45,25 +45,25 @@ class BSMeterZoneGIFGenerator {
                     padding: 20px;
                     font-family: Arial, sans-serif;
                     background: white;
-                    width: 360px;
-                    height: 260px;
+                    width: 460px;
+                    height: 310px;
                     overflow: hidden;
                 }
                 
                 .gauge-container {
                     position: relative;
-                    width: 300px;
-                    height: 200px;
+                    width: 400px;
+                    height: 260px;
                     margin: 0 auto;
                 }
                 
                 .gauge-svg {
-                    width: 300px;
-                    height: 200px;
+                    width: 400px;
+                    height: 260px;
                 }
                 
                 .needle {
-                    transform-origin: 150px 150px;
+                    transform-origin: 200px 200px;
                     transition: transform 0.5s ease-out;
                     transform: rotate(${needleAngle}deg);
                 }
@@ -71,50 +71,43 @@ class BSMeterZoneGIFGenerator {
                 .labels {
                     display: flex;
                     justify-content: space-between;
-                    width: 270px;
+                    width: 360px;
                     margin: 10px auto;
                     font-weight: bold;
                     font-size: 14px;
                 }
                 
-                .label-left { color: #D32F2F; }
-                .label-right { color: #4CAF50; }
+                .label-left { color: #E53E3E; }
+                .label-right { color: #38A169; }
                 
                 .score-text {
                     text-align: center;
                     font-weight: bold;
-                    font-size: 16px;
+                    font-size: 20px;
                     color: ${zone.color};
-                    margin: 5px 0;
-                }
-                
-                .score-percent {
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 28px;
-                    color: ${zone.color};
+                    margin: 15px 0;
                 }
             </style>
         </head>
         <body>
             <div class="gauge-container">
-                <svg class="gauge-svg" viewBox="0 0 300 200">
+                <svg class="gauge-svg" viewBox="0 0 400 260">
                     ${this.segments.map(segment => {
                         const startAngle = (180 - (segment.start / 100) * 180) * Math.PI / 180;
                         const endAngle = (180 - (segment.end / 100) * 180) * Math.PI / 180;
-                        const startX = 150 + 120 * Math.cos(startAngle);
-                        const startY = 150 - 120 * Math.sin(startAngle);
-                        const endX = 150 + 120 * Math.cos(endAngle);
-                        const endY = 150 - 120 * Math.sin(endAngle);
+                        const startX = 200 + 160 * Math.cos(startAngle);
+                        const startY = 200 - 160 * Math.sin(startAngle);
+                        const endX = 200 + 160 * Math.cos(endAngle);
+                        const endY = 200 - 160 * Math.sin(endAngle);
                         const largeArcFlag = Math.abs(segment.end - segment.start) >= 20 ? 1 : 0;
                         
-                        return `<path d="M 150 150 L ${startX} ${startY} A 120 120 0 ${largeArcFlag} 1 ${endX} ${endY} Z" 
+                        return `<path d="M 200 200 L ${startX} ${startY} A 160 160 0 ${largeArcFlag} 1 ${endX} ${endY} Z" 
                                      fill="${segment.color}" stroke="white" stroke-width="2" stroke-opacity="0.8"/>`;
                     }).join('')}
                     
                     <g class="needle">
-                        <path d="M 150,150 L 148,50 L 152,50 Z" fill="#333333"/>
-                        <circle cx="150" cy="150" r="10" fill="#444444"/>
+                        <path d="M 200,200 L 197,35 L 200,30 L 203,35 Z" fill="#333333" stroke="#222" stroke-width="0.5"/>
+                        <circle cx="200" cy="200" r="10" fill="#444444" stroke="#333" stroke-width="1"/>
                     </g>
                 </svg>
             </div>
@@ -125,7 +118,6 @@ class BSMeterZoneGIFGenerator {
             </div>
             
             <div class="score-text">${zone.text}</div>
-            <div class="score-percent">${Math.round(actualScore)}%</div>
         </body>
         </html>`;
     }
