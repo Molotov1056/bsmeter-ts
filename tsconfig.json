@@ -2,12 +2,14 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "sourceMap": true,
-    "strict": true,
-    "noImplicitAny": true,
+    "strict": false,
+    "noImplicitAny": false,
     "module": "es6",
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "types": ["chrome"],
+    "lib": ["es6", "dom"]
   }
 }

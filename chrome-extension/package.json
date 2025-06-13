@@ -1,0 +1,30 @@
+{
+  "name": "bs-meter-chrome-extension",
+  "version": "1.0.0",
+  "description": "BS Meter Chrome Extension - Detect fake news and bias with AI analysis",
+  "main": "popup.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "clean": "rm -rf dist",
+    "package": "npm run build && cd dist && zip -r ../bs-meter-extension.zip ."
+  },
+  "keywords": [
+    "chrome-extension",
+    "fake-news",
+    "bias-detection",
+    "ai-analysis",
+    "fact-checking"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.0",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.0",
+    "css-loader": "^6.7.3",
+    "style-loader": "^3.3.2"
+  },
+  "dependencies": {}
+}

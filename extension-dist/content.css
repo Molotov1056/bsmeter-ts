@@ -1,0 +1,37 @@
+/* Content script styles for BS Meter Chrome Extension */
+
+/* These styles can be used if we add any UI elements to web pages */
+
+.bs-meter-overlay {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 10000;
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.bs-meter-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.bs-meter-indicator.high-truth {
+    background-color: #4CAF50;
+}
+
+.bs-meter-indicator.medium-truth {
+    background-color: #FFC107;
+}
+
+.bs-meter-indicator.low-truth {
+    background-color: #F44336;
+}

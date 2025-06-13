@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BS Meter</title><style>body {
+            width: 350px;
+            height: 400px;
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }</style><script defer="defer" src="popup.js"></script></head><body><h2 style="text-align: center; margin-top: 0;">BS Meter</h2><div id="gauge-container"><svg id="gauge-svg" viewBox="0 0 400 260" style="width: 100%; height: 200px;"><g id="segments"></g><g id="needle"><path d="M 200,200 L 197,35 L 200,30 L 203,35 Z" fill="#333333" stroke="#222" stroke-width="0.5"></path><circle cx="200" cy="200" r="10" fill="#444444" stroke="#333" stroke-width="1"></circle></g></svg></div><div class="gauge-labels"><div class="gauge-label left">BULLSHIT</div><div class="gauge-label right">TRUE</div></div><div id="gauge-text" style="text-align: center; font-weight: bold; margin: 10px 0;">CHECKING...</div><div id="gauge-percentage" style="text-align: center; font-size: 18px; margin-bottom: 15px;">0%</div><div id="controls" style="text-align: center;"><div id="button-container" style="margin-bottom: 10px;"><button id="analyze-page-btn" style="margin: 5px;">Analyze Page</button> <button id="random-btn" style="margin: 5px;">Random Score</button></div><input type="range" id="value-slider" min="0" max="100" value="30" style="width: 100%;"></div><script src="popup.js"></script></body></html>
